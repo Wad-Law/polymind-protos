@@ -1,0 +1,9 @@
+# Rust build artifacts (if we add build.rs later)
+target/
+Cargo.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
