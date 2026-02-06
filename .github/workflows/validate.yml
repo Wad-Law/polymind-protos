@@ -1,0 +1,55 @@
+name: Validate Protos
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install protobuf compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+          protoc --version
+
+      - name: Validate proto files
+        run: |
+          echo "Validating proto files..."
+          cd protos
+          for proto in *.proto; do
+            echo "Checking $proto..."
+            protoc --proto_path=. --descriptor_set_out=/dev/null "$proto"
+          done
+          echo "✅ All proto files are valid"
+
+      - name: Check proto style (optional)
+        continue-on-error: true
+        run: |
+          echo "Running basic proto linting..."
+          cd protos
+
+          # Check for common issues
+          for proto in *.proto; do
+            echo "Checking style in $proto..."
+
+            # Check for syntax version
+            if ! grep -q "^syntax = \"proto3\";" "$proto"; then
+              echo "⚠️  Warning: $proto missing 'syntax = \"proto3\";' declaration"
+            fi
+
+            # Check for package declaration
+            if ! grep -q "^package " "$proto"; then
+              echo "⚠️  Warning: $proto missing 'package' declaration"
+            fi
+
+            echo "✓ Basic style checks passed for $proto"
+          done
