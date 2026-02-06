@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package control;
+
+service ControlService {
+  // Returns the current system health and status
+  rpc GetStatus (Empty) returns (SystemStatus);
+
+  // Streams system status updates in real-time
+  rpc SubscribeStatus (Empty) returns (stream SystemStatus);
+
+  // Sets the target system state (Active / Halted)
+  rpc SetSystemState (SetStateRequest) returns (SetStateResponse);
+}
+
+message Empty {}
+
+message SystemStatus {
+  bool healthy = 1;
+  string mode = 2; // "active", "halted: reason"
+  int32 active_strategies = 3;
+}
+
+message SetStateRequest {
+  enum State {
+    ACTIVE = 0;
+    HALTED = 1;
+  }
+  State target_state = 1;
+  string reason = 2;
+  string operator_id = 3;
+  bool liquidate_positions = 4;
+}
+
+message SetStateResponse {
+  bool success = 1;
+  string message = 2;
+  string previous_state = 3;
+}
