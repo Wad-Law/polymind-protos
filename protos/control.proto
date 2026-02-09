@@ -11,6 +11,9 @@ service ControlService {
 
   // Sets the target system state (Active / Halted)
   rpc SetSystemState (SetStateRequest) returns (SetStateResponse);
+
+  // Streams incoming news events in real-time (server-side streaming)
+  rpc StreamNews (NewsStreamRequest) returns (stream NewsEvent);
 }
 
 message Empty {}
@@ -36,4 +39,40 @@ message SetStateResponse {
   bool success = 1;
   string message = 2;
   string previous_state = 3;
+}
+
+// Request for news stream subscription
+message NewsStreamRequest {
+  // Optional: Filter by feed sources (e.g., "RSS", "FinJuice", "GDELT-Active")
+  repeated string feeds = 1;
+
+  // Include keyword labels in response
+  bool include_labels = 2;
+
+  // Number of historical news items to send on initial connection (default: 10, max: 100)
+  int32 history_count = 3;
+}
+
+// Real-time news event
+message NewsEvent {
+  // Source feed: "RSS", "FinJuice", "GDELT-Active"
+  string feed = 1;
+
+  // News headline/title
+  string title = 2;
+
+  // Article URL
+  string url = 3;
+
+  // Brief description or summary
+  string description = 4;
+
+  // Unix timestamp (milliseconds) when news was published
+  int64 published_ts = 5;
+
+  // Keywords/tags extracted from the article
+  repeated string labels = 6;
+
+  // Unix timestamp (milliseconds) when Polymind received this news
+  int64 received_ts = 7;
 }
